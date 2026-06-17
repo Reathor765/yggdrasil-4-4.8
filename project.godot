@@ -10,9 +10,14 @@ config_version=5
 
 [application]
 
-config/name="Node Tree Toolkit"
+config/name="Yggdrasil"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
+
+[autoload]
+
+YggdrasilLoader="*uid://dqbvvuokqq4um"
+YggdrasilSerializer="*uid://g5grx5mhggq2"
 
 [display]
 
@@ -21,7 +26,7 @@ window/stretch/aspect="expand"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/kenyoni/plugin_reloader/plugin.cfg")
+enabled=PackedStringArray("res://addons/yggdrasil/plugin.cfg")
 
 [physics]
 

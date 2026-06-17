@@ -3,4 +3,7 @@
 /android/
 
 # Custom
+/yggdrasil_data/
 /addons/kenyoni/
+/game/
+/docs/images/*.import
