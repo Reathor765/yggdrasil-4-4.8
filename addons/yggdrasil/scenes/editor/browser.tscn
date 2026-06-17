@@ -9,8 +9,7 @@
 [ext_resource type="Shortcut" uid="uid://8yyn8n7k5cx7" path="res://addons/yggdrasil/shortcuts/rename.tres" id="4_k657g"]
 [ext_resource type="Shortcut" uid="uid://do5ll41g08v5b" path="res://addons/yggdrasil/shortcuts/duplicate.tres" id="5_lb6tk"]
 
-[node name="Browser" type="MarginContainer" unique_id=2118647903 node_paths=PackedStringArray("tree_ui", "search_bar", "group_menu", "tree_menu", "load_time_label", "groups_count_label", "trees_count_label", "delete_confirmation", "save_confirmation")]
-visible = false
+[node name="Browser" type="MarginContainer" unique_id=2118647903 node_paths=PackedStringArray("tree_ui", "search_bar", "group_menu", "tree_menu", "load_time_label", "groups_count_label", "trees_count_label", "version_label", "delete_confirmation")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -28,8 +27,8 @@ tree_menu = NodePath("VBoxContainer/HBoxContainer/TreeMenu")
 load_time_label = NodePath("VBoxContainer/MarginContainer/HBoxContainer/LoadTime")
 groups_count_label = NodePath("VBoxContainer/MarginContainer/HBoxContainer/GroupsCount")
 trees_count_label = NodePath("VBoxContainer/MarginContainer/HBoxContainer/TreesCount")
+version_label = NodePath("VBoxContainer/MarginContainer/HBoxContainer/Version")
 delete_confirmation = NodePath("DeleteConfirmation")
-save_confirmation = NodePath("")
 delete_shortcut = ExtResource("2_la0mn")
 new_group_shortcut = ExtResource("3_pf2ul")
 new_tree_shortcut = ExtResource("4_fpm24")
@@ -102,6 +101,11 @@ layout_mode = 2
 [node name="TreesCount" type="Label" parent="VBoxContainer/MarginContainer/HBoxContainer" unique_id=740634242]
 layout_mode = 2
 text = "Total trees: 6"
+
+[node name="Version" type="Label" parent="VBoxContainer/MarginContainer/HBoxContainer" unique_id=714705227]
+layout_mode = 2
+size_flags_horizontal = 10
+text = "v1.0.0"
 
 [node name="DeleteConfirmation" type="ConfirmationDialog" parent="." unique_id=450558619]
 oversampling_override = 1.0

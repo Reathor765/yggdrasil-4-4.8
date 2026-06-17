@@ -15,6 +15,7 @@ const FuzzySearch = Yggdrasil.FuzzySearch
 @export var load_time_label: Label
 @export var groups_count_label: Label
 @export var trees_count_label: Label
+@export var version_label: Label
 @export var delete_confirmation: ConfirmationDialog
 
 @export_group("Shortcuts")
@@ -43,6 +44,7 @@ func init():
 	var end_time = Time.get_ticks_usec()
 	var load_time = (end_time - start_time) / 1_000_000.
 	load_time_label.text = "Load time: %.2fs" % load_time
+	version_label.text = "v%s" % Yggdrasil.VERSION
 
 func _connect_signals():
 	search_bar.text_changed.connect(_on_search_text_changed)
