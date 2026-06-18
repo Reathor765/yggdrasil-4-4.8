@@ -163,6 +163,7 @@ func _on_item_edited():
 				attribute.value_count = int(edited.get_range(0))
 				edited.set_cell_mode(0, TreeItem.CELL_MODE_STRING)
 				edited.set_text(0, "Value Count: %d" % attribute.value_count)
+				editor.node_attribute_changed.emit(_current_node, attribute.id, false)
 		editor.set_dirty(true)
 		return
 
@@ -206,7 +207,7 @@ func _on_item_edited():
 			var values = []
 			for i in metadata.value_count:
 				values.append(0)
-				
+			
 			if _current_node.prefab:
 				_current_node.prefab.set_attribute(metadata.id, values)
 			else:

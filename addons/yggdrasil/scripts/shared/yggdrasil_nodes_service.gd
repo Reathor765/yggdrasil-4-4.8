@@ -77,6 +77,31 @@ func _create_node_from_data(node_data: YggdrasilNode) -> YggdrasilNodeButton:
 
 	return node
 
+func create_node(position: Vector2, node_type: YggdrasilNode.NodeType) -> YggdrasilNodeButton:
+	var node = _build_node(node_type)
+
+	node.node_data = YggdrasilNode.new()
+	
+	node.id = _tree_data.get_next_id()
+	node.name = "Node_%d" % node.id
+	node.node_name = node.name
+	node.type = node_type
+	node.icon = Yggdrasil.BlankIcon
+	node.tree = _tree_data
+	node.tree_view = _tree_view
+	_nodes[node.id] = node
+
+	_tree_view.nodes_container.add_child(node)
+	
+	_position(node, position)
+
+	node.node_data.position = _tree_view.translate_node_position(node)
+	_tree_data.nodes.append(node.node_data)
+	node.pressed.connect(_on_node_pressed.bind(node))
+	node_created.emit(node)
+	
+	return node
+
 func create_from_prefab(position: Vector2, prefab: YggdrasilPrefab) -> YggdrasilNodeButton:
 	var node = _build_node(prefab.type, prefab.icon, prefab.border_normal)
 	
