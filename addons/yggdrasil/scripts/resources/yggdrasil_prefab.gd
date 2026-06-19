@@ -63,7 +63,12 @@ func remove_attribute(attribute_id: String) -> void:
 	attributes.erase(attribute_id)
 	attribute_changed.emit(self, attribute_id, true)
 
-func set_attribute_value(attribute_id: String, index: int, value) -> void:
+# Value must be int or float
+func set_attribute_value(attribute_id: String, index: int, value: Variant) -> void:
+	if typeof(value) != TYPE_INT and typeof(value) != TYPE_FLOAT:
+		push_error("Value is of type %s, expected int or float (attribute_id=%s)" % [type_string(typeof(value)), attribute_id])
+		return
+	
 	if not attributes.has(attribute_id):
 		return
 	

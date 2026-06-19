@@ -5,7 +5,7 @@ extends YggdrasilBaseService
 const Yggdrasil = preload("res://addons/yggdrasil/scripts/shared/yggdrasil.gd")
 
 signal line_created(line: YggdrasilConnection, from_node_id: int, to_node_id: int)
-signal line_disconnected(from_line: YggdrasilNodeButton, to_line: YggdrasilNodeButton)
+signal line_disconnected(from_node: YggdrasilNodeButton, to_node: YggdrasilNodeButton)
 signal node_connected(from_node: YggdrasilNodeButton, to_node_id: int)
 signal node_disconnected(from_node: YggdrasilNodeButton, to_node_id: int)
 

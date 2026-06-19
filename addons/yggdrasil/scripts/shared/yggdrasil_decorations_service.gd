@@ -31,7 +31,7 @@ func load_tree(tree_data: YggdrasilTree) -> void:
 		decoration_created.emit(node)
 		node.pressed.connect(_on_node_pressed.bind(node))
 
-func create_decoration(at_position: Vector2, icon_texture: Texture2D) -> void:
+func create_decoration(at_position: Vector2) -> void:
 	var node = _scene.instantiate()
 	node.node_data = YggdrasilNode.new()
 	node.id = _tree_data.get_next_id()
