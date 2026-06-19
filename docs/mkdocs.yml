@@ -7,8 +7,6 @@ nav:
   - Prefabs: prefabs.md
   - Using trees in-game: usage.md
   - Saving and Loading: serialization.md
-  - Shared Scripts: shared.md
-  - Runtime Scripts: runtime.md
   - API Reference:
       - Shared:
           - Yggdrasil: api/shared/yggdrasil.md
@@ -28,18 +26,28 @@ nav:
           - YggdrasilTreeView: api/shared/yggdrasil-tree-view.md
       - Runtime:
           - YggdrasilSerializer: api/runtime/yggdrasil-serializer.md
+      - Resources:
+          - YggdrasilRegistry: api/resources/yggdrasil-registry.md
+          - YggdrasilGroup: api/resources/yggdrasil-group.md
+          - YggdrasilTree: api/resources/yggdrasil-tree.md
+          - YggdrasilTreeState: api/resources/yggdrasil-tree-state.md
+          - YggdrasilConnection: api/resources/yggdrasil-connection.md
+          - YggdrasilNode: api/resources/yggdrasil-node.md
+          - YggdrasilPrefab: api/resources/yggdrasil-prefab.md
+          - YggdrasilAttribute: api/resources/yggdrasil-attribute.md
 
 theme:
   name: material
   features:
     - content.code.copy
   palette:
-    # Palette toggle for automatic mode
-    - media: "(prefers-color-scheme)"
+    # Palette toggle for dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
       toggle:
-        icon: material/brightness-auto
-        name: Switch to light mode
-
+        icon: material/brightness-4
+        name: Switch to system preference
+      
     # Palette toggle for light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -47,12 +55,8 @@ theme:
         icon: material/brightness-7
         name: Switch to dark mode
 
-    # Palette toggle for dark mode
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      toggle:
-        icon: material/brightness-4
-        name: Switch to system preference
+extra_css:
+  - stylesheets/extra.css
 
 markdown_extensions:
   - attr_list

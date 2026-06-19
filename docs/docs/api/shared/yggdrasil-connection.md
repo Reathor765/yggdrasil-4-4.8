@@ -1,5 +1,3 @@
 # `@tool` YggdrasilConnection API
 
----
-
-_Work in progress_
+Line node used to represent a connection between tree nodes.

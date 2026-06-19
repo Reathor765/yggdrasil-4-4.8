@@ -4,7 +4,7 @@
 
 Namespace script holding reusable constants and preloaded resources
 
-# Properties
+## Properties
 
 | Type                | Name                        | Description                                                      |
 | ------------------- | --------------------------- | ---------------------------------------------------------------- |
@@ -28,7 +28,7 @@ Namespace script holding reusable constants and preloaded resources
 | PackedScene         | `DefaultLineScene`          | Default scene for created lines                                  |
 | PackedScene         | `DefaultTooltipScene`       | Default scene for node tooltip                                   |
 
-# Methods
+## Methods
 
 | Type   | Name                    | Description                             |
 | ------ | ----------------------- | --------------------------------------- |
@@ -36,9 +36,9 @@ Namespace script holding reusable constants and preloaded resources
 | String | `get_root_path`         | Path to folder with generated resources |
 | String | `get_registry_filename` | Name of registry resource               |
 
-# Enumerations
+## Enumerations
 
-`enum` AllocationState:
+### `enum` AllocationState: { #enum-allocation-state }
 
 - `AllocationState` **NORMAL** = 0
     - Default state.
