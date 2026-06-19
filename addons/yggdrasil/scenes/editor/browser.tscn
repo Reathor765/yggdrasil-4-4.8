@@ -20,6 +20,10 @@ Color(0.37254903, 1, 0.5921569, 1): Color(0.45, 0.95, 0.5, 1),
 Color(1, 0.8666667, 0.39607844, 1): Color(0.83, 0.78, 0.62, 1)
 }
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_fvkcx"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_lkrjo"]
+
 [node name="Browser" type="MarginContainer" unique_id=2118647903 node_paths=PackedStringArray("tree_ui", "search_bar", "group_menu", "tree_menu", "load_time_label", "groups_count_label", "trees_count_label", "version_label", "delete_confirmation", "docs_button")]
 anchors_preset = 15
 anchor_right = 1.0
@@ -130,10 +134,16 @@ icon_name = "ExternalLink"
 [node name="VSeparator" type="VSeparator" parent="VBoxContainer/MarginContainer/HBoxContainer/HBoxContainer" unique_id=1158448922]
 layout_mode = 2
 
-[node name="Version" type="Label" parent="VBoxContainer/MarginContainer/HBoxContainer/HBoxContainer" unique_id=714705227]
+[node name="Version" type="RichTextLabel" parent="VBoxContainer/MarginContainer/HBoxContainer/HBoxContainer" unique_id=262097471]
 layout_mode = 2
 size_flags_horizontal = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_fvkcx")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_lkrjo")
+bbcode_enabled = true
 text = "v1.0.0"
+fit_content = true
+autowrap_mode = 0
+vertical_alignment = 1
 
 [node name="DeleteConfirmation" type="ConfirmationDialog" parent="." unique_id=450558619]
 oversampling_override = 1.0

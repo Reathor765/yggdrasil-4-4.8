@@ -4,6 +4,7 @@ extends Control
 
 const Yggdrasil = preload("res://addons/yggdrasil/scripts/shared/yggdrasil.gd")
 
+signal update_available(version: String)
 signal dirty_changed(editor: YggdrasilEditor, dirty: bool)
 signal tree_closed(editor: YggdrasilEditor)
 
@@ -11,6 +12,7 @@ signal tree_closed(editor: YggdrasilEditor)
 @export var browser: YggdrasilBrowser
 @export var editor_scene: PackedScene
 @export var save_confirmation: ConfirmationDialog
+@export var http_request: HTTPRequest
 
 @export_group("Shortcuts")
 @export var undo_shortcut: Shortcut
@@ -19,6 +21,9 @@ signal tree_closed(editor: YggdrasilEditor)
 var initialized = false
 
 var _open_editors: Array[YggdrasilEditor] = []
+
+const UPDATE_INTERVAL = 5 * 1000 # 5 seconds
+var _last_update_check: int = 0
 
 func init():
 	initialized = true
@@ -31,6 +36,9 @@ func init():
 	save_confirmation.add_button("Don't Save", true, "no_save")
 	save_confirmation.custom_action.connect(_dont_save)
 	save_confirmation.confirmed.connect(_confirm_save)
+	
+	http_request.request_completed.connect(_on_request_completed)
+	_check_for_updates()
 
 func open_tree(path: String):
 	var tree_resource = YggdrasilLoader.load_tree(path)
@@ -57,6 +65,7 @@ func open_tree(path: String):
 
 	tab_container.current_tab = editor_index
 	_open_editors.append(editor)
+	_check_for_updates()
 
 func _shortcut_input(event):
 	if not is_visible_in_tree():
@@ -74,6 +83,7 @@ func _on_tree_closed(editor: YggdrasilEditor):
 	_open_editors.erase(editor)
 	tree_closed.emit(editor)
 	editor.queue_free()
+	_check_for_updates()
 
 func _on_tree_dirty_changed(editor: YggdrasilEditor, dirty: bool):
 	var index = editor.get_index()
@@ -105,3 +115,24 @@ func _dont_save(_action: String):
 	var editor: YggdrasilEditor = save_confirmation.get_meta("editor")
 	editor.close_tree()
 	save_confirmation.hide()
+
+func _check_for_updates():
+	var time = Time.get_ticks_msec()
+	if time - _last_update_check < UPDATE_INTERVAL:
+		return
+	
+	_last_update_check = time
+	http_request.request("https://api.github.com/repos/Oen44/yggdrasil/releases/latest")
+
+func _on_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray):
+	if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
+		return
+	
+	var json = JSON.parse_string(body.get_string_from_utf8())
+	if not json:
+		return
+	
+	var tag: String = json.tag_name
+	var version = tag.substr(1)
+	if Yggdrasil.VERSION != version:
+		update_available.emit(version)

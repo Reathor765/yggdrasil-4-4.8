@@ -15,7 +15,7 @@ const FuzzySearch = Yggdrasil.FuzzySearch
 @export var load_time_label: Label
 @export var groups_count_label: Label
 @export var trees_count_label: Label
-@export var version_label: Label
+@export var version_label: RichTextLabel
 @export var delete_confirmation: ConfirmationDialog
 @export var docs_button: Button
 
@@ -47,6 +47,9 @@ func init():
 	var end_time = Time.get_ticks_usec()
 	var load_time = (end_time - start_time) / 1_000_000.
 	load_time_label.text = "Load time: %.2fs" % load_time
+
+	main_screen.update_available.connect(_on_plugin_update_available)
+	version_label.meta_clicked.connect(_on_version_meta_clicked)
 	version_label.text = "v%s" % Yggdrasil.VERSION
 
 func _connect_signals():
@@ -721,3 +724,13 @@ func _confirm_delete():
 	tree_menu.get_popup().set_item_disabled(MenuOption.CREATE_ITEM, true)
 	tree_menu.get_popup().set_item_disabled(MenuOption.DUPLICATE_ITEM, true)
 	tree_menu.get_popup().set_item_disabled(MenuOption.DELETE_ITEM, true)
+
+func _on_plugin_update_available(new_version: String):
+	version_label.text = ""
+	var icon = EditorInterface.get_editor_theme().get_icon("StatusWarning", Yggdrasil.ICON_THEME)
+	version_label.add_image(icon, 0, 0, Color.WHITE, INLINE_ALIGNMENT_CENTER, Rect2(0, 0, 0, 0), null, false, "New update available to download!")
+	version_label.append_text(" v%s" % Yggdrasil.VERSION)
+	version_label.append_text(" (New: [url=https://github.com/Oen44/yggdrasil/releases/latest]v%s[/url])" % new_version)
+
+func _on_version_meta_clicked(meta: Variant):
+	OS.shell_open(str(meta))
