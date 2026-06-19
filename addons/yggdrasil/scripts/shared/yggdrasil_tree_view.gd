@@ -26,12 +26,15 @@ var connections_service: YggdrasilConnectionsService
 var prefabs_service: YggdrasilPrefabsService
 var allocation_service: YggdrasilAllocationService
 
+var _tooltip_scene: PackedScene
 var _tooltip: YggdrasilTooltip
 
 var _tree_data: YggdrasilTree
 
 func load_tree(tree_data: YggdrasilTree, decoration_scene: PackedScene, node_scene: PackedScene, line_scene: PackedScene, tooltip_scene: PackedScene) -> void:
 	_tree_data = tree_data
+
+	_tooltip_scene = tooltip_scene
 
 	_create_containers()
 	_create_background()
@@ -147,7 +150,7 @@ func _on_node_hovered(node: YggdrasilNodeButton, is_hovered: bool):
 	if is_hovered:
 		if node.type != YggdrasilNode.NodeType.DECORATION:
 			if not _tooltip:
-				_tooltip = Yggdrasil.DefaultTooltipScene.instantiate()
+				_tooltip = _tooltip_scene.instantiate()
 				add_child(_tooltip)
 			_tooltip.show()
 			_tooltip.reset_size()
