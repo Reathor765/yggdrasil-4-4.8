@@ -34,15 +34,15 @@ var _tree_data: YggdrasilTree
 func load_tree(tree_data: YggdrasilTree, decoration_scene: PackedScene, node_scene: PackedScene, line_scene: PackedScene, tooltip_scene: PackedScene) -> void:
 	_tree_data = tree_data
 
+	if _tree_data.tree_state.version != _tree_data.version:
+		tree_version_mismatch.emit(_tree_data, _tree_data.tree_state.version)
+
 	_tooltip_scene = tooltip_scene
 
 	_create_containers()
 	_create_background()
 	_create_camera()
 	_create_services(decoration_scene, node_scene, line_scene)
-
-	if _tree_data.tree_state.version != _tree_data.version:
-		tree_version_mismatch.emit(_tree_data, _tree_data.tree_state.version)
 
 func _create_containers() -> void:
 	main_container = Control.new()
