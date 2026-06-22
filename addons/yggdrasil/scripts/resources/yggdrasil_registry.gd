@@ -1,4 +1,7 @@
 class_name YggdrasilRegistry
 extends Resource
 
-@export var groups: Array[YggdrasilGroup]
+@export_storage var groups # : Array[YggdrasilGroup]
+
+func _init():
+	groups = []
