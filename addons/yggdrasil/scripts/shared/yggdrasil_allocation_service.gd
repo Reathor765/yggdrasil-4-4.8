@@ -39,6 +39,7 @@ func load_tree(tree_data: YggdrasilTree) -> void:
 func on_node_pressed(node: YggdrasilNodeButton) -> void:
 	if _tree_data.preallocation:
 		if _refund_mode:
+			var pre_size = _refund_nodes.size()
 			if _can_stage_for_refund(node):
 				node.refund = true
 				_refund_nodes.append(node.id)
@@ -47,7 +48,11 @@ func on_node_pressed(node: YggdrasilNodeButton) -> void:
 				node.refund = false
 				_refund_nodes.erase(node.id)
 				node_refund_removed.emit(node)
+			
+			if Input.is_key_pressed(Key.KEY_CTRL) and pre_size == 0:
+				confirm_refund()
 		else:
+			var pre_size = _preallocated_nodes.size()
 			if _can_preallocate(node):
 				_preallocated_nodes.append(node.id)
 				node.preallocated = true
@@ -56,6 +61,9 @@ func on_node_pressed(node: YggdrasilNodeButton) -> void:
 				_preallocated_nodes.erase(node.id)
 				node.preallocated = false
 				node_unpreallocated.emit(node)
+			
+			if Input.is_key_pressed(Key.KEY_CTRL) and pre_size == 0:
+				confirm_preallocations()
 	else:
 		if _can_allocate(node):
 			_allocated_nodes.append(node.id)
@@ -71,6 +79,7 @@ func confirm_preallocations() -> void:
 		var node: YggdrasilNodeButton = _tree_view.nodes_service.get_node(node_id)
 		node.preallocated = false
 		node.allocated = true
+		_allocated_nodes.append(node.id)
 		node_allocated.emit(node)
 
 	_preallocated_nodes.clear()
@@ -91,6 +100,7 @@ func enter_refund_mode() -> void:
 func exit_refund_mode() -> void:
 	for node_id in _refund_nodes:
 		var node: YggdrasilNodeButton = _tree_view.nodes_service.get_node(node_id)
+		node.refund = false
 		node_refund_removed.emit(node)
 	
 	_refund_nodes.clear()
@@ -102,6 +112,7 @@ func confirm_refund() -> void:
 		var node: YggdrasilNodeButton = _tree_view.nodes_service.get_node(node_id)
 		_allocated_nodes.erase(node.id)
 		node.allocated = false
+		node.refund = false
 		node_deallocated.emit(node)
 
 	_refund_nodes.clear()
@@ -183,8 +194,12 @@ func _is_valid_deallocation(node: YggdrasilNodeButton, remaining: Array[int]) ->
 	if deallocation_check and not deallocation_check.call():
 		return false
 
-	if not node.allocated and not node.preallocated:
-		return false
+	if _refund_mode:
+		if not node.allocated and not node.preallocated:
+			return false
+	else:
+		if node.allocated or not node.preallocated:
+			return false
 
 	if remaining.is_empty():
 		return true
