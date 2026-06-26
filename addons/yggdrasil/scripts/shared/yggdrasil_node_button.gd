@@ -15,6 +15,7 @@ var is_mouse_over: bool = false
 var preallocated: bool = false
 var refund: bool = false
 var allocated: bool = false
+var allocation_level: int = 0
 var state: Yggdrasil.AllocationState = Yggdrasil.AllocationState.NORMAL
 
 var is_root: bool:
@@ -34,6 +35,12 @@ var reference_id: String:
 		return node_data.reference_id
 	set(value):
 		node_data.reference_id = value
+
+var external_id: String:
+	get:
+		return node_data.external_id
+	set(value):
+		node_data.external_id = value
 
 var node_name: String:
 	get:
@@ -107,6 +114,12 @@ var locked: bool:
 	set(value):
 		node_data.locked = value
 
+var max_allocations: int:
+	get:
+		return node_data.max_allocations
+	set(value):
+		node_data.max_allocations = value
+
 func _ready():
 	button_mask = MOUSE_BUTTON_MASK_LEFT | MOUSE_BUTTON_MASK_RIGHT
 	mouse_filter = MOUSE_FILTER_PASS
@@ -135,7 +148,13 @@ func format_tooltip():
 	var regex = RegEx.new()
 	regex.compile('#')
 
-	var str = "[b][color=#f9e6ca]%s[/color][/b]\n\n" % node_name
+	var str = ""
+
+	if tree.multiallocation:
+		str = "[b][color=#f9e6ca]%s[/color][/b] (%d/%d)\n\n" % [node_name, allocation_level, max_allocations]
+	else:
+		str = "[b][color=#f9e6ca]%s[/color][/b]\n\n" % node_name
+
 	for attr_id in attributes.keys():
 		var attribute: YggdrasilAttribute = tree.attributes[attr_id]
 		var matches = regex.search_all(attribute.effect)
@@ -143,17 +162,40 @@ func format_tooltip():
 			push_error("Attribute (id=%s) effect string has mismatched number (found=%d, expected=%d) of placeholders (char=#) for attribute values." % [attribute.id, matches.size(), attribute.value_count])
 			continue
 		
-		var tooltip = attribute.effect
-		for i in attribute.value_count:
-			var value = attributes[attr_id][i]
-			tooltip = regex.sub(tooltip, str(value))
-		str += "[color=#8a8aff]%s[/color]\n" % tooltip
+		str += "[color=#8a8aff]%s[/color]\n" % format_attribute_effect(regex, attribute, attr_id)
 
 	if not description.is_empty():
 		str += "\n[color=orange]%s[/color]" % description
 
 	str = str.strip_edges()
 	return str
+
+func format_attribute_effect(regex: RegEx, attribute: YggdrasilAttribute, attr_id: String) -> String:
+	var formatted = ""
+	if tree.multiallocation:
+		if allocation_level > 0:
+			formatted = attribute.effect
+			var values = attributes[attr_id][max(0, allocation_level - 1)]
+			for i in attribute.value_count:
+				var value = values[i]
+				formatted = regex.sub(formatted, str(value))
+		if allocation_level < max_allocations:
+			formatted += "\n[color=orange]Next Level: %s[/color]" % _format_attribute_level(regex, attribute, attr_id, allocation_level)
+			formatted = formatted.strip_edges()
+	else:
+		formatted = attribute.effect
+		for i in attribute.value_count:
+			var value = attributes[attr_id][i]
+			formatted = regex.sub(formatted, str(value))
+	return formatted
+
+func _format_attribute_level(regex: RegEx, attribute: YggdrasilAttribute, attr_id: String, level: int) -> String:
+	var formatted = attribute.effect
+	var values = attributes[attr_id][min(max_allocations, level)]
+	for i in attribute.value_count:
+		var value = values[i]
+		formatted = regex.sub(formatted, str(value))
+	return formatted
 
 func set_state(new_state: Yggdrasil.AllocationState):
 	state = new_state

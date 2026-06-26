@@ -37,11 +37,15 @@ signal node_attribute_changed(node: YggdrasilNodeButton, attribute_id: String, r
 @export var close_shortcut: Shortcut
 @export var duplicate_shortcut: Shortcut
 @export var delete_shortcut: Shortcut
+@export var undo_shortcut: Shortcut
+@export var redo_shortcut: Shortcut
 
 enum ToolType {
 	SELECT,
 	MOVE
 }
+
+var undo_redo: UndoRedo
 
 var _tree_view: YggdrasilTreeView
 var _selected_tool: ToolType = ToolType.SELECT
@@ -57,6 +61,8 @@ var last_saved_time: int = 0
 var dirty: bool = false
 
 func init():
+	undo_redo = UndoRedo.new()
+
 	prefabs_tab.changed.connect(_mark_dirty)
 	inspector.changed.connect(_mark_dirty)
 	attributes_editor.changed.connect(_mark_dirty)
@@ -84,6 +90,13 @@ func init():
 	file_menu.set_item_shortcut(1, close_shortcut)
 	file_menu.id_pressed.connect(_on_file_menu_item_pressed)
 	
+	var edit_menu: PopupMenu = menu_bar.get_node("Edit")
+	edit_menu.add_item("Undo", 0)
+	edit_menu.set_item_shortcut(0, undo_shortcut)
+	edit_menu.add_item("Redo", 1)
+	edit_menu.set_item_shortcut(1, redo_shortcut)
+	edit_menu.id_pressed.connect(_on_edit_menu_item_pressed)
+	
 	tools_group.pressed.connect(_on_tool_selected)
 
 	grid_snap_button.toggled.connect(_on_grid_snap_toggled)
@@ -91,6 +104,7 @@ func init():
 	grid_y_input.value_changed.connect(_on_grid_snap_changed)
 
 func destroy():
+	undo_redo.clear_history()
 	prefabs_tab.destroy()
 	inspector.destroy()
 	hierarchy.destroy()
@@ -117,6 +131,13 @@ func _on_file_menu_item_pressed(id: int):
 			save_tree()
 		1:
 			close_tree()
+
+func _on_edit_menu_item_pressed(id: int):
+	match id:
+		0:
+			undo_redo.undo()
+		1:
+			undo_redo.redo()
 
 func save_tree():
 	last_saved_time = Time.get_ticks_msec()
@@ -146,6 +167,7 @@ func edit_tree(path: String):
 	settings_editor.revealed_changed.connect(_on_revealed_changed)
 	settings_editor.allocation_changed.connect(_on_allocation_changed)
 	settings_editor.preallocation_changed.connect(_on_preallocation_changed)
+	settings_editor.multiallocation_changed.connect(_on_multiallocation_changed)
 	
 	_tree_view.camera.zoom_changed.connect(_on_camera_zoom_changed)
 	inspector.init(_tree_view)
@@ -158,6 +180,7 @@ func edit_tree(path: String):
 	_tree_view.decorations_service.decoration_pressed.connect(_on_node_pressed)
 
 	validator.validate()
+	save_tree()
 
 func _build_tree_view():
 	var builder = YggdrasilBuilder.new(tree)
@@ -248,8 +271,9 @@ func deselect_node(node: YggdrasilNodeButton):
 	node.button_mask = MOUSE_BUTTON_MASK_LEFT | MOUSE_BUTTON_MASK_RIGHT
 
 	for out_node_id in node.out_nodes:
-		var line: YggdrasilConnection = _tree_view.lines_container.get_node("Line_%d_%d" % [node.id, out_node_id])
-		line.self_modulate = Color.WHITE
+		var line: YggdrasilConnection = _tree_view.lines_container.get_node_or_null("Line_%d_%d" % [node.id, out_node_id])
+		if line:
+			line.self_modulate = Color.WHITE
 
 func _clear_selection():
 	var cleared = not selected_nodes.is_empty()
@@ -271,8 +295,9 @@ func _focus_node(node: YggdrasilNodeButton):
 	node.add_child(focus)
 
 	for out_node_id in node.out_nodes:
-		var line: YggdrasilConnection = _tree_view.lines_container.get_node("Line_%d_%d" % [node.id, out_node_id])
-		line.self_modulate = Color.GREEN
+		var line: YggdrasilConnection = _tree_view.lines_container.get_node_or_null("Line_%d_%d" % [node.id, out_node_id])
+		if line:
+			line.self_modulate = Color.GREEN
 
 func select_node(node: YggdrasilNodeButton, add_to_selection: bool = false):
 	if node and node.locked:
@@ -319,21 +344,24 @@ func _on_selection_box_selected(rect: Rect2):
 func _on_tool_moved(new_positions: Array[Vector2]):
 	if selected_nodes.is_empty():
 		return
-	
+
 	for i in range(selected_nodes.size()):
 		var node = selected_nodes[i]
-		var pos = new_positions[i]
-		if is_grid_snapping_enabled():
-			var center_local = pos + (node.size * 0.5)
-			var center = center_local - (tree.size * 0.5)
-			center = _snap_to_grid(center)
-			center_local = center + (tree.size * 0.5)
-			pos = center_local - (node.size * 0.5)
-		node.position = pos
-		node.node_data.position = _tree_view.translate_node_position(node)
-		_tree_view.connections_service.update_connected_lines(node)
-	
+		var new_pos = new_positions[i]
+		_do_move_node(node, new_pos)
+
+func _do_move_node(node: YggdrasilNodeButton, new_pos: Vector2):
+	if is_grid_snapping_enabled():
+		var center_local = new_pos + (node.size * 0.5)
+		var center = center_local - (tree.size * 0.5)
+		center = _snap_to_grid(center)
+		center_local = center + (tree.size * 0.5)
+		new_pos = center_local - (node.size * 0.5)
+	node.position = new_pos
+	node.node_data.position = _tree_view.translate_node_position(node)
+	_tree_view.connections_service.update_connected_lines(node)
 	_update_move_tool_position()
+	_mark_dirty()
 
 func _update_move_tool_position():
 	if selected_nodes.size() == 1:
@@ -345,9 +373,18 @@ func _update_move_tool_position():
 		mid_pos /= selected_nodes.size()
 		_move_tool.position = mid_pos
 
-func _on_move_released():
+func _on_move_released(new_positions: Array[Vector2], start_positions: Array[Vector2]):
 	if selected_nodes.is_empty():
 		return
+		
+	undo_redo.create_action("Move Nodes")
+	for i in range(selected_nodes.size()):
+		var node = selected_nodes[i]
+		var start_pos = start_positions[i]
+		var new_pos = new_positions[i]
+		undo_redo.add_do_method(_do_move_node.bind(node, new_pos))
+		undo_redo.add_undo_method(_do_move_node.bind(node, start_pos))
+	undo_redo.commit_action(false)
 	
 	node_moved.emit(selected_nodes[0], _tree_view.translate_node_position(selected_nodes[0]))
 	_mark_dirty()
@@ -359,10 +396,14 @@ func _duplicate_selected_nodes():
 	if selected_nodes.is_empty():
 		return
 	
+	undo_redo.create_action("Duplicate Nodes")
 	var created_nodes = []
 	for selected_node in selected_nodes:
 		var node = _tree_view.nodes_service.duplicate_node(selected_node)
 		created_nodes.append(node)
+		undo_redo.add_do_method(undo_delete_node.bind(node))
+		undo_redo.add_undo_method(_do_delete_node.bind(node))
+	undo_redo.commit_action(false)
 	
 	_clear_selection()
 
@@ -375,50 +416,85 @@ func _delete_selected_nodes():
 	if selected_nodes.is_empty():
 		return
 	
-	var nodes_to_delete = selected_nodes.duplicate()
-	for node in nodes_to_delete:
-		delete_node(node)
-	
+	var to_delete = selected_nodes.duplicate()
 	_clear_selection()
+	
+	undo_redo.create_action("Delete Nodes")
+	undo_redo.add_do_method(_do_delete_nodes.bind(to_delete))
+	undo_redo.add_undo_method(_undo_delete_nodes.bind(to_delete))
+	undo_redo.commit_action()
+	
+	_mark_dirty()
+
+func _do_delete_nodes(nodes: Array[YggdrasilNodeButton]):
+	for node in nodes:
+		delete_node(node)
+	_mark_dirty()
+
+func _undo_delete_nodes(nodes: Array[YggdrasilNodeButton]):
+	for node in nodes:
+		if node.type == YggdrasilNode.NodeType.DECORATION:
+			_tree_view.decorations_service.restore_decoration(node)
+		else:
+			_tree_view.nodes_service.restore_node(node)
+	
+	for node in nodes:
+		if node.type != YggdrasilNode.NodeType.DECORATION:
+			_tree_view.connections_service.restore_connections(node)
 	_mark_dirty()
 
 func delete_node(node: YggdrasilNodeButton):
+	_do_delete_node(node)
+
+func _do_delete_node(node: YggdrasilNodeButton):
 	if node.type != YggdrasilNode.NodeType.DECORATION:
-		for out_node_id in node.node_data.out_nodes:
-			var line: YggdrasilConnection = _tree_view.lines_container.get_node_or_null("Line_%d_%d" % [node.id, out_node_id])
-			if line:
-				line.queue_free()
-			var target_node = _tree_view.nodes_service.get_node(out_node_id)
-			if target_node:
-				target_node.in_nodes.erase(node.id)
-		
-		for in_node_id in node.node_data.in_nodes:
-			var line: YggdrasilConnection = _tree_view.lines_container.get_node_or_null("Line_%d_%d" % [in_node_id, node.id])
-			if line:
-				line.queue_free()
-			var source_node = _tree_view.nodes_service.get_node(in_node_id)
-			if source_node:
-				source_node.out_nodes.erase(node.id)
-				source_node.line_data.erase(node.id)
-		node.line_data.clear()
-	
-	if node.prefab:
-		node.prefab.remove_node(node)
+		_delete_connections(node)
 
 	if node.type == YggdrasilNode.NodeType.DECORATION:
 		tree.decorations.erase(node.node_data)
+		_tree_view.decorations_service.delete_decoration(node)
 	else:
 		tree.nodes.erase(node.node_data)
+		_tree_view.nodes_service.delete_node(node)
 	
-	_tree_view.nodes_service.delete_node(node)
 	node_deleted.emit(node)
-	node.queue_free()
 	_mark_dirty()
 
 	if node in selected_nodes:
 		selected_nodes.erase(node)
 		if selected_nodes.is_empty():
 			node_selected.emit(null)
+
+func _delete_connection(from_node: YggdrasilNodeButton, to_node: YggdrasilNodeButton):
+	var line: YggdrasilConnection = _tree_view.lines_container.get_node_or_null("Line_%d_%d" % [from_node.id, to_node.id])
+	if line:
+		line.queue_free()
+	
+	var target_node = _tree_view.nodes_service.get_node(to_node.id)
+	if target_node:
+		target_node.in_nodes.erase(from_node.id)
+
+func _delete_connections(node):
+	for out_node_id in node.node_data.out_nodes:
+		var line: YggdrasilConnection = _tree_view.lines_container.get_node_or_null("Line_%d_%d" % [node.id, out_node_id])
+		if line:
+			line.queue_free()
+		var target_node = _tree_view.nodes_service.get_node(out_node_id)
+		if target_node:
+			target_node.in_nodes.erase(node.id)
+	
+	for in_node_id in node.node_data.in_nodes:
+		var line: YggdrasilConnection = _tree_view.lines_container.get_node_or_null("Line_%d_%d" % [in_node_id, node.id])
+		if line:
+			line.queue_free()
+
+func undo_delete_node(node: YggdrasilNodeButton):
+	if node.type == YggdrasilNode.NodeType.DECORATION:
+		_tree_view.decorations_service.restore_decoration(node)
+	else:
+		_tree_view.nodes_service.restore_node(node)
+		_tree_view.connections_service.restore_connections(node)
+	_mark_dirty()
 
 func _create_grid_view():
 	_grid = YggdrasilProceduralGrid.new()
@@ -450,10 +526,17 @@ func _get_center_position(node: Control) -> Vector2:
 	return node.position + (node.size / 2)
 
 func _on_new_node_requested(node_type: YggdrasilNode.NodeType):
+	var node = null
 	if node_type == YggdrasilNode.NodeType.DECORATION:
-		_tree_view.decorations_service.create_decoration(_snap_to_grid(_last_click_pos))
+		node = _tree_view.decorations_service.create_decoration(_snap_to_grid(_last_click_pos))
 	else:
-		_tree_view.nodes_service.create_node(_snap_to_grid(_last_click_pos), node_type)
+		node = _tree_view.nodes_service.create_node(_snap_to_grid(_last_click_pos), node_type)
+	
+	undo_redo.create_action("Create Node")
+	undo_redo.add_do_method(undo_delete_node.bind(node))
+	undo_redo.add_undo_method(_do_delete_node.bind(node))
+	undo_redo.commit_action(false)
+
 	_mark_dirty()
 
 func _save_as_prefab():
@@ -509,6 +592,7 @@ func _on_node_pressed(node: YggdrasilNodeButton):
 
 	var shift_pressed = Input.is_key_pressed(KEY_SHIFT)
 	if shift_pressed and not node.type == YggdrasilNode.NodeType.DECORATION:
+		undo_redo.create_action("Create Connections")
 		for i in range(selected_nodes.size()):
 			var selected_node = selected_nodes[i]
 			if selected_node.type == YggdrasilNode.NodeType.DECORATION:
@@ -518,6 +602,9 @@ func _on_node_pressed(node: YggdrasilNodeButton):
 				continue
 			
 			_tree_view.connections_service.create_connection(selected_node, node)
+			undo_redo.add_do_method(_tree_view.connections_service.restore_connections.bind(selected_node))
+			undo_redo.add_undo_method(_delete_connection.bind(selected_node, node))
+		undo_redo.commit_action(false)
 
 		_mark_dirty()
 		return
@@ -551,10 +638,12 @@ func _connect_prefab_signals(prefab: YggdrasilPrefab):
 	prefab.icon_changed.connect(_on_prefab_icon_changed)
 	prefab.border_changed.connect(_on_prefab_border_changed)
 	prefab.attribute_changed.connect(_on_prefab_attribute_changed)
+	prefab.max_allocations_changed.connect(_on_prefab_max_allocation_changed)
 
 func _on_prefab_name_changed(prefab: YggdrasilPrefab):
 	for node in prefab.nodes:
 		node.node_name = prefab.node_name
+		node.external_id = prefab.id
 
 func _on_prefab_description_changed(prefab: YggdrasilPrefab):
 	for node in prefab.nodes:
@@ -591,6 +680,10 @@ func _on_prefab_attribute_changed(prefab: YggdrasilPrefab, attribute_id: String,
 			node.attributes[attribute_id] = prefab.attributes[attribute_id]
 		
 		node_attribute_changed.emit(node, attribute_id, removed)
+
+func _on_prefab_max_allocation_changed(prefab: YggdrasilPrefab):
+	for node in prefab.nodes:
+		node.max_allocations = prefab.max_allocations
 
 func _on_background_changed():
 	var color_rect = _tree_view.background_container.get_node("BackgroundColor")
@@ -634,3 +727,14 @@ func _on_allocation_changed():
 
 func _on_preallocation_changed():
 	pass
+
+func _on_multiallocation_changed():
+	for node_data in tree.nodes:
+		node_data.attributes.clear()
+	for node_type in tree.prefabs.keys():
+		if node_type == YggdrasilNode.NodeType.DECORATION:
+			continue
+		for prefab in tree.prefabs[node_type]:
+			prefab.attributes.clear()
+	inspector.update_multiallocation(tree.multiallocation)
+	attributes_editor.clear_selected_attributes()

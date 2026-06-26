@@ -11,6 +11,7 @@ enum NodeType {
 @export_storage var is_root: bool
 @export_storage var reference_id: String
 @export_storage var id: int
+@export_storage var external_id: String
 @export_storage var name: String
 @export_storage var description: String
 
@@ -28,6 +29,8 @@ enum NodeType {
 
 @export_storage var attributes # : Dictionary[String, Array]
 
+@export_storage var max_allocations: int
+
 # Editor-only properties
 @export_storage var locked: bool
 
@@ -36,6 +39,7 @@ func _init():
 	out_nodes = []
 	in_nodes = []
 	attributes = {}
+	max_allocations = 1
 
 func get_attribute_value(attribute_id: String) -> Array:
 	return attributes.get(attribute_id, [])

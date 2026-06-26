@@ -12,6 +12,7 @@ signal line_texture_changed
 signal revealed_changed
 signal allocation_changed
 signal preallocation_changed
+signal multiallocation_changed
 
 @export var editor: YggdrasilEditor
 
@@ -47,6 +48,7 @@ signal preallocation_changed
 @export var revelead_checkbox: CheckBox
 @export var allocation_checkbox: CheckBox
 @export var preallocation_checkbox: CheckBox
+@export var multiallocation_checkbox: CheckBox
 
 func init():
 	version_input.value_changed.connect(_on_version_changed)
@@ -98,6 +100,7 @@ func init():
 	revelead_checkbox.toggled.connect(_on_revealed_toggled)
 	allocation_checkbox.toggled.connect(_on_allocation_toggled)
 	preallocation_checkbox.toggled.connect(_on_preallocation_toggled)
+	multiallocation_checkbox.toggled.connect(_on_multiallocation_toggled)
 
 func load_tree(tree_data: YggdrasilTree):
 	version_input.set_value_no_signal(tree_data.version)
@@ -162,6 +165,7 @@ func load_tree(tree_data: YggdrasilTree):
 	revelead_checkbox.set_pressed_no_signal(tree_data.revealed)
 	allocation_checkbox.set_pressed_no_signal(tree_data.allocation)
 	preallocation_checkbox.set_pressed_no_signal(tree_data.preallocation)
+	multiallocation_checkbox.set_pressed_no_signal(tree_data.multiallocation)
 
 func _on_version_changed(value: float):
 	editor.tree.version = int(version_input.value)
@@ -314,3 +318,23 @@ func _on_preallocation_toggled(toggled_on: bool):
 	editor.tree.preallocation = toggled_on
 	preallocation_changed.emit()
 	changed.emit()
+
+func _on_multiallocation_toggled(toggled_on: bool):
+	multiallocation_checkbox.set_pressed_no_signal(not toggled_on)
+
+	var confirmation_dialog = ConfirmationDialog.new()
+	confirmation_dialog.dialog_text = "Are you sure you want to change the multi-allocation setting?\nThis will remove attributes from all nodes and prefabs."
+	confirmation_dialog.cancel_button_text = "Cancel"
+	confirmation_dialog.ok_button_text = "Enable" if toggled_on else "Disable"
+	confirmation_dialog.canceled.connect(func():
+		confirmation_dialog.queue_free()
+	)
+	confirmation_dialog.confirmed.connect(func():
+		editor.tree.multiallocation = toggled_on
+		multiallocation_changed.emit()
+		changed.emit()
+		multiallocation_checkbox.set_pressed_no_signal(toggled_on)
+		confirmation_dialog.queue_free()
+	)
+	add_child(confirmation_dialog)
+	confirmation_dialog.popup_centered()

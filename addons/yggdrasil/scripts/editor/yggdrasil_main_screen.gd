@@ -14,10 +14,6 @@ signal tree_closed(editor: YggdrasilEditor)
 @export var save_confirmation: ConfirmationDialog
 @export var http_request: HTTPRequest
 
-@export_group("Shortcuts")
-@export var undo_shortcut: Shortcut
-@export var redo_shortcut: Shortcut
-
 var initialized = false
 
 var _open_editors: Array[YggdrasilEditor] = []
@@ -66,18 +62,6 @@ func open_tree(path: String):
 	tab_container.current_tab = editor_index
 	_open_editors.append(editor)
 	_check_for_updates()
-
-func _shortcut_input(event):
-	if not is_visible_in_tree():
-		return
-	
-	if not event.pressed or event.is_echo():
-		return
-	
-	if undo_shortcut.matches_event(event):
-		get_viewport().set_input_as_handled()
-	elif redo_shortcut.matches_event(event):
-		get_viewport().set_input_as_handled()
 
 func _on_tree_closed(editor: YggdrasilEditor):
 	_open_editors.erase(editor)
@@ -134,5 +118,5 @@ func _on_request_completed(result: int, response_code: int, headers: PackedStrin
 	
 	var tag: String = json.tag_name
 	var version = tag.substr(1)
-	if Yggdrasil.VERSION != version:
+	if Yggdrasil.get_version_number() < Yggdrasil.get_version_number(version):
 		update_available.emit(version)
