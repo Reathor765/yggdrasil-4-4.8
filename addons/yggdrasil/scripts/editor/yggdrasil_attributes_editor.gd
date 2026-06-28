@@ -274,7 +274,7 @@ func _on_item_edited():
 				if not prefab.attributes.has(old_id):
 					continue
 				
-				var values = prefab.attributes[old_id]
+				var values = prefab.attributes[old_id].duplicate()
 				if prefab.reference_id.is_empty():
 					prefab.attributes.erase(old_id)
 					prefab.attributes[metadata.id] = values
@@ -282,8 +282,8 @@ func _on_item_edited():
 					prefab.remove_attribute(old_id)
 					if editor.tree.multiallocation:
 						var multiallocation_values = []
-						for level in range(_current_node.max_allocations):
-							multiallocation_values.append(values.duplicate())
+						for level in range(prefab.max_allocations):
+							multiallocation_values.append(values[level])
 						prefab.set_attribute(metadata.id, multiallocation_values, true)
 					else:
 						prefab.set_attribute(metadata.id, values, editor.tree.multiallocation)
@@ -301,6 +301,7 @@ func _on_item_activated():
 		var text = selected.get_text(0)
 		selected.set_cell_mode(0, TreeItem.CELL_MODE_STRING)
 		selected.set_text(0, text)
+		tree.edit_selected(true)
 		return
 
 	var attribute = selected.get_parent().get_metadata(0)
