@@ -702,7 +702,11 @@ func _confirm_delete():
 		var group_resource: YggdrasilGroup = ResourceLoader.load(group_path)
 		var tree_path = ResourceUID.get_id_path(metadata["uid"])
 		
-		group_resource.trees.erase(ResourceLoader.load(tree_path))
+		for tree in group_resource.trees:
+			if tree.resource_path == tree_path:
+				group_resource.trees.erase(tree)
+				break
+		
 		ResourceSaver.save(group_resource, group_path)
 
 		if delete_file:
