@@ -26,27 +26,16 @@ func _build_node(node_type: YggdrasilNode.NodeType, icon_texture: Texture2D = nu
 	var node_size: Vector2 = _tree_data.get_node_size(node_type)
 	node.size = node_size
 
-	var icon = TextureRect.new()
-	icon.name = "Icon"
-	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var icon: TextureRect = node.get_node("Icon")
 	if icon_texture:
 		icon.texture = icon_texture
 	else:
 		icon.texture = Yggdrasil.BlankIcon
-	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.set_anchors_preset(Control.PRESET_FULL_RECT)
-	node.add_child(icon)
 	node.tree = _tree_data
 	node.tree_view = _tree_view
 
-	var border = TextureRect.new()
-	border.name = "Border"
-	border.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	border.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	border.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	node.add_child(border)
-
+	var border: TextureRect = node.get_node("Border")
 	if border_texture:
 		border.texture = border_texture
 		border.size = node.size * _tree_data.border_scale
