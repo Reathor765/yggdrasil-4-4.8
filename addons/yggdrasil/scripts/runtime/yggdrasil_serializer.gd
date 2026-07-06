@@ -4,7 +4,7 @@ const Yggdrasil = preload("res://addons/yggdrasil/scripts/shared/yggdrasil.gd")
 const OLD_SAVE_PATH = "user://yggdrasil"
 const SAVE_PATH = "user://yggdrasil_v2"
 
-func save_tree_state(tree: YggdrasilTree) -> void:
+func save_tree_state(tree: YggdrasilTree, custom_path: String = "") -> void:
 	if Engine.is_editor_hint():
 		return
 	
@@ -15,7 +15,11 @@ func save_tree_state(tree: YggdrasilTree) -> void:
 	if DirAccess.dir_exists_absolute(old_save_path):
 		DirAccess.remove_absolute(old_save_path)
 
-	var save_path = "%s/%s.tree" % [SAVE_PATH, uid]
+	var save_path: String
+	if custom_path.is_empty():
+		save_path = "%s/%s.tree" % [SAVE_PATH, uid]
+	else:
+		save_path = custom_path
 	var file = FileAccess.open(save_path, FileAccess.WRITE)
 	if not file:
 		return
@@ -26,7 +30,7 @@ func save_tree_state(tree: YggdrasilTree) -> void:
 	file.store_var(tree.tree_state.allocation_level)
 	file.close()
 
-func load_tree_state(tree: YggdrasilTree) -> void:
+func load_tree_state(tree: YggdrasilTree, custom_path: String = "") -> void:
 	if Engine.is_editor_hint():
 		return
 	
@@ -38,7 +42,11 @@ func load_tree_state(tree: YggdrasilTree) -> void:
 		_migrate_old_save(tree, old_save_path)
 		return
 
-	var save_path = "%s/%s.tree" % [SAVE_PATH, uid]
+	var save_path: String
+	if custom_path.is_empty():
+		save_path = "%s/%s.tree" % [SAVE_PATH, uid]
+	else:
+		save_path = custom_path
 	var file = FileAccess.open(save_path, FileAccess.READ)
 	if not file:
 		return
@@ -47,7 +55,7 @@ func load_tree_state(tree: YggdrasilTree) -> void:
 	tree.tree_state.version = file.get_32()
 	tree.tree_state.allocated_nodes = file.get_var()
 	
-	if saved_version <= Yggdrasil.get_version_number("2.0.0"):
+	if saved_version >= Yggdrasil.get_version_number("2.0.0"):
 		tree.tree_state.allocation_level = file.get_var()
 	
 	file.close()

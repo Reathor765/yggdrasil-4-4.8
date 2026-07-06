@@ -504,7 +504,6 @@ func _on_prefab_name_changed(prefab: YggdrasilPrefab):
 	name_input.text = prefab.node_name
 
 func _update_attributes(node: YggdrasilNodeButton):
-	print("_update_attributes")
 	attributes_panel.show()
 	attributes_tree.clear()
 	attributes_tree.create_item()

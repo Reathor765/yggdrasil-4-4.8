@@ -36,7 +36,8 @@ func load_tree(tree_data: YggdrasilTree) -> void:
 		var node: YggdrasilNodeButton = _tree_view.nodes_service.get_node(node_id)
 		node.allocated = true
 		node.set_state(Yggdrasil.AllocationState.ACTIVE)
-		node.allocation_level = _allocation_level[node_id]
+		if _tree_data.multiallocation:
+			node.allocation_level = _allocation_level[node_id]
 		node_allocated.emit(node)
 
 func on_node_pressed(node: YggdrasilNodeButton) -> void:

@@ -24,7 +24,6 @@ func load_tree(tree_data: YggdrasilTree) -> void:
 			line.name = "Line_%d_%d" % [node_data.id, out_node_id]
 			line.texture = _tree_data.line_texture_normal
 			line.texture_mode = Line2D.LINE_TEXTURE_TILE
-			line.width = 16.0
 			line.joint_mode = Line2D.LINE_JOINT_BEVEL
 			
 			var line_data = node_data.line_data.get(out_node_id, YggdrasilLineData.new())
@@ -56,7 +55,6 @@ func create_connection(from_node: YggdrasilNodeButton, to_node: YggdrasilNodeBut
 	line.name = "Line_%d_%d" % [from_node.id, to_node.id]
 	line.texture = _tree_data.line_texture_normal
 	line.texture_mode = Line2D.LINE_TEXTURE_TILE
-	line.width = 16.0
 	line.joint_mode = Line2D.LINE_JOINT_BEVEL
 	
 	var line_data = YggdrasilLineData.new()
@@ -219,7 +217,6 @@ func restore_connections(from_node: YggdrasilNodeButton) -> void:
 		line.name = "Line_%d_%d" % [from_node.id, to_node.id]
 		line.texture = _tree_data.line_texture_normal
 		line.texture_mode = Line2D.LINE_TEXTURE_TILE
-		line.width = 16.0
 		line.joint_mode = Line2D.LINE_JOINT_BEVEL
 		
 		_connect_nodes(line, from_node, to_node, from_node.line_data[to_node.id])
@@ -242,7 +239,6 @@ func restore_connections(from_node: YggdrasilNodeButton) -> void:
 		line.name = "Line_%d_%d" % [source_node.id, from_node.id]
 		line.texture = _tree_data.line_texture_normal
 		line.texture_mode = Line2D.LINE_TEXTURE_TILE
-		line.width = 16.0
 		line.joint_mode = Line2D.LINE_JOINT_BEVEL
 		
 		_connect_nodes(line, source_node, from_node, source_node.line_data[from_node.id])
