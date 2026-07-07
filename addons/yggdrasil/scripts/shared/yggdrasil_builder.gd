@@ -9,6 +9,7 @@ var _tree: YggdrasilTree
 
 var _tree_view: YggdrasilTreeView
 var _parent: Node
+var _save_path: String
 
 var _decoration_scene: PackedScene
 var _node_scene: PackedScene
@@ -40,6 +41,10 @@ func _init(tree_data: YggdrasilTree):
 
 func set_parent(parent: Node) -> YggdrasilBuilder:
 	_parent = parent
+	return self
+
+func set_save_path(save_path: String) -> YggdrasilBuilder:
+	_save_path = save_path
 	return self
 
 func set_decoration_scene(decoration_scene: PackedScene) -> YggdrasilBuilder:
@@ -132,7 +137,7 @@ func build() -> YggdrasilTreeView:
 	_parent.add_child(_tree_view)
 
 	if not Engine.is_editor_hint():
-		YggdrasilSerializer.load_tree_state(_tree)
+		YggdrasilSerializer.load_tree_state(_tree, _save_path)
 
 	_tree_view.load_tree(_tree, _decoration_scene, _node_scene, _line_scene, _tooltip_scene)
 

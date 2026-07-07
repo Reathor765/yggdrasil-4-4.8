@@ -19,7 +19,7 @@ func get_registry() -> YggdrasilRegistry:
 	return _registry
 
 # Returns tree by path (group_name/tree_name, e.g. "my group/my tree", case insensitive)
-func load_tree(path: String) -> YggdrasilTree:
+func load_tree(path: String, as_unique: bool = false) -> YggdrasilTree:
 	path = path.to_lower()
 	
 	var tree: YggdrasilTree = null
@@ -38,6 +38,9 @@ func load_tree(path: String) -> YggdrasilTree:
 	if tree == null:
 		push_error("Yggdrasil: Failed to load tree at path '%s'" % path)
 	
+	if as_unique:
+		return tree.duplicate(true)
+
 	return tree
 
 func add_tree_to_registry(group: YggdrasilGroup, tree: YggdrasilTree) -> void:
