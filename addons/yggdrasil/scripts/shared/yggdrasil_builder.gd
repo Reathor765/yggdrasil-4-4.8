@@ -4,6 +4,10 @@ extends RefCounted
 ## A builder for YggdrasilTree that returns YggdrasilTreeView
 
 const Yggdrasil = preload("res://addons/yggdrasil/scripts/shared/yggdrasil.gd")
+const DefaultDecorationScene = preload("res://addons/yggdrasil/scenes/shared/yggdrasil_default_node.tscn")
+const DefaultNodeScene = preload("res://addons/yggdrasil/scenes/shared/yggdrasil_default_node.tscn")
+const DefaultLineScene = preload("res://addons/yggdrasil/scenes/shared/yggdrasil_default_connection.tscn")
+const DefaultTooltipScene = preload("res://addons/yggdrasil/scenes/shared/yggdrasil_node_tooltip.tscn")
 
 var _tree: YggdrasilTree
 
@@ -34,10 +38,10 @@ var _node_refund_check_callback: Callable
 
 func _init(tree_data: YggdrasilTree):
 	_tree = tree_data
-	_decoration_scene = Yggdrasil.DefaultDecorationScene
-	_node_scene = Yggdrasil.DefaultNodeScene
-	_line_scene = Yggdrasil.DefaultLineScene
-	_tooltip_scene = Yggdrasil.DefaultTooltipScene
+	_decoration_scene = DefaultDecorationScene
+	_node_scene = DefaultNodeScene
+	_line_scene = DefaultLineScene
+	_tooltip_scene = DefaultTooltipScene
 
 func set_parent(parent: Node) -> YggdrasilBuilder:
 	_parent = parent

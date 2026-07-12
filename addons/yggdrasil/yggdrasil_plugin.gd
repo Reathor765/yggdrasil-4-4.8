@@ -2,6 +2,7 @@
 extends EditorPlugin
 
 const Yggdrasil = preload("res://addons/yggdrasil/scripts/shared/yggdrasil.gd")
+const MainScreen = preload("res://addons/yggdrasil/scenes/editor/main_screen.tscn")
 
 var _distraction = false
 var _scene_container = null
@@ -41,7 +42,7 @@ func _enter_tree():
 	}
 	ProjectSettings.add_property_info(property_info)
 	
-	_main_screen_instance = Yggdrasil.MainScreen.instantiate()
+	_main_screen_instance = MainScreen.instantiate()
 	EditorInterface.get_editor_main_screen().add_child(_main_screen_instance)
 	
 	_main_screen_instance.dirty_changed.connect(_on_tree_dirty_changed)
