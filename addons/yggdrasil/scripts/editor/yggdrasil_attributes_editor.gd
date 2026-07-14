@@ -5,7 +5,7 @@ extends Control
 signal changed
 
 const Yggdrasil = preload("res://addons/yggdrasil/scripts/shared/yggdrasil.gd")
-const FuzzySearch = Yggdrasil.FuzzySearch
+const CustomFuzzySearch = preload("res://addons/yggdrasil/scripts/editor/fuzzy_search.gd")
 
 const MAX_ATTRIBUTES = 4
 
@@ -70,7 +70,7 @@ func _on_filter_text_changed(new_text: String):
 		var attribute = target_item.get_metadata(0)
 		return attribute.id
 	))
-	var results_by_id: Array[FuzzySearch.FuzzySearchResult] = []
+	var results_by_id: Array[CustomFuzzySearch.CustomFuzzySearchResult] = []
 	_fuzzy.search_all(targets_by_id, results_by_id)
 
 	for r in results_by_id:
@@ -82,7 +82,7 @@ func _on_filter_text_changed(new_text: String):
 		var attribute = target_item.get_metadata(0)
 		return attribute.name
 	))
-	var results_by_name: Array[FuzzySearch.FuzzySearchResult] = []
+	var results_by_name: Array[CustomFuzzySearch.CustomFuzzySearchResult] = []
 	_fuzzy.search_all(targets_by_name, results_by_name)
 	for r in results_by_name:
 		var item = tree.get_root().get_child(ids[r.original_index])
@@ -93,7 +93,7 @@ func _on_filter_text_changed(new_text: String):
 		var attribute = target_item.get_metadata(0)
 		return attribute.effect
 	))
-	var results_by_effect: Array[FuzzySearch.FuzzySearchResult] = []
+	var results_by_effect: Array[CustomFuzzySearch.CustomFuzzySearchResult] = []
 	_fuzzy.search_all(targets_by_effect, results_by_effect)
 	for r in results_by_effect:
 		var item = tree.get_root().get_child(ids[r.original_index])

@@ -3,7 +3,7 @@ class_name PrefabPanelEditor
 extends Control
 
 const Yggdrasil = preload("res://addons/yggdrasil/scripts/shared/yggdrasil.gd")
-const FuzzySearch = Yggdrasil.FuzzySearch
+const CustomFuzzySearch = preload("res://addons/yggdrasil/scripts/editor/fuzzy_search.gd")
 
 signal changed
 
@@ -115,7 +115,7 @@ func _on_filter_text_changed(new_text: String):
 		id_to_text[i] = prefab.node_name
 
 	var targets = PackedStringArray(ids.map(func(id: int) -> String: return id_to_text[id]))
-	var results: Array[FuzzySearch.FuzzySearchResult] = []
+	var results: Array[CustomFuzzySearch.CustomFuzzySearchResult] = []
 	_fuzzy.search_all(targets, results)
 
 	var result: Array[int] = []

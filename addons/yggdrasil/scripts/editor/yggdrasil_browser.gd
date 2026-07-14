@@ -3,7 +3,7 @@ class_name YggdrasilBrowser
 extends Control
 
 const Yggdrasil = preload("res://addons/yggdrasil/scripts/shared/yggdrasil.gd")
-const FuzzySearch = Yggdrasil.FuzzySearch
+const CustomFuzzySearch = preload("res://addons/yggdrasil/scripts/editor/fuzzy_search.gd")
 
 @export var main_screen: YggdrasilMainScreen
 
@@ -214,7 +214,7 @@ func _on_search_text_changed(new_text: String):
 			uids.append(tree_uid)
 
 	var targets = PackedStringArray(uids.map(func(uid: int) -> String: return uid_to_item[uid].get_text(0)))
-	var results: Array[FuzzySearch.FuzzySearchResult] = []
+	var results: Array[CustomFuzzySearch.CustomFuzzySearchResult] = []
 	_fuzzy.search_all(targets, results)
 
 	var result: Array[TreeItem] = []

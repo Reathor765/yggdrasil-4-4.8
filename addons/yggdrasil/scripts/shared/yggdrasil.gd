@@ -1,4 +1,4 @@
-const VERSION = "2.3.2"
+const VERSION = "2.3.1"
 
 const ROOT_PATH_SETTING = "addons/yggdrasil/root_path"
 const DEFAULT_ROOT_PATH = "res://yggdrasil_data"
@@ -23,7 +23,7 @@ const COLOR_CODES = [
 const Loader = "res://addons/yggdrasil/scripts/shared/yggdrasil_loader.gd"
 const Serializer = "res://addons/yggdrasil/scripts/runtime/yggdrasil_serializer.gd"
 
-const FuzzySearch = preload("res://addons/yggdrasil/scripts/editor/fuzzy_search.gd")
+const CustomFuzzySearch = preload("res://addons/yggdrasil/scripts/editor/fuzzy_search.gd")
 const UUIDGenerator = preload("res://addons/yggdrasil/scripts/editor/uuid_generator.gd")
 
 const BlankIcon = preload("res://addons/yggdrasil/blank_icon.png")
