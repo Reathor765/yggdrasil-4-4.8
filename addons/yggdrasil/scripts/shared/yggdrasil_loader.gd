@@ -49,10 +49,15 @@ func add_tree_to_registry(group: YggdrasilGroup, tree: YggdrasilTree) -> void:
 # Private
 
 func _load_registry():
-	if not FileAccess.file_exists(Yggdrasil.get_registry_path()):
-		_create_registry()
+	if OS.has_feature("editor"):
+		if not FileAccess.file_exists(Yggdrasil.get_registry_path()):
+			_create_registry()
+	else:
+		if not ResourceLoader.exists(Yggdrasil.get_registry_path()):
+			push_error("Yggdrasil: Registry file not found at path '%s'" % Yggdrasil.get_registry_path())
+			return
 	
-	_registry = ResourceLoader.load(Yggdrasil.get_registry_path(), "YggdrasilRegistry", ResourceLoader.CACHE_MODE_IGNORE)
+	_registry = ResourceLoader.load(Yggdrasil.get_registry_path(), "", ResourceLoader.CACHE_MODE_IGNORE)
 	_cache_paths_to_trees()
 
 func _create_registry():
